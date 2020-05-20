@@ -1,7 +1,6 @@
 const { axios } = require('./fakeBackend/mock');
 
 const getFeedbackByProductViewData = async (product, actualize = false) => {
-        // функции для ошибок (не прохлдит тест так как не понимаю как вернуть message у изначальной функции если при запрашивании даты)
         function handleErrorFeedback(err) {
                 if (err.response.status === 404) {
                         console.log('Такого продукта не существует');
@@ -26,7 +25,7 @@ const getFeedbackByProductViewData = async (product, actualize = false) => {
                         },
                 })
                 .catch(handleErrorFeedback);
-        // инициируем массив с отзывами из респонда
+
         const feedbacksArrUnsorted = feedbackRes.data.feedback;
 
         // случай, когда отзывов нет
@@ -37,7 +36,6 @@ const getFeedbackByProductViewData = async (product, actualize = false) => {
                 };
         }
 
-        // создаем массив с id юзеров чтобы использовать как параметр при запросе даты о юзерах
         const usersIds = feedbacksArrUnsorted.map(singleFeedback => singleFeedback.userId);
 
         // запрашиваем дату о юзерах, сразу пытаемся поймать ошибку
@@ -49,7 +47,6 @@ const getFeedbackByProductViewData = async (product, actualize = false) => {
                 })
                 .catch(handleErrorUsers);
 
-        // инициируем массив с юзерами из респонда
         const usersArr = usersRes.data.users;
 
         // ютилити функция для поиска юзера по id
@@ -60,15 +57,10 @@ const getFeedbackByProductViewData = async (product, actualize = false) => {
         }
 
         // сортируем массив с отзывами по датам
-        const feedbacksArr = feedbacksArrUnsorted.sort(function(a, b) {
-                const aDate = a.date;
-                const bDate = b.date;
-                return aDate - bDate;
-        });
+        const feedbacksArr = feedbacksArrUnsorted.sort((a, b) => a.date - b.date);
 
         // формируем окончательный массив с отзывами
         const feedback = feedbacksArr.map(function(singleFeedback) {
-                // ищем юзера по id
                 const user = usersArr.find(findById(singleFeedback.userId));
                 // форматируем дату
                 const date = new Date(singleFeedback.date);
@@ -78,7 +70,6 @@ const getFeedbackByProductViewData = async (product, actualize = false) => {
                         day: 'numeric',
                 });
                 const [{ value: month }, , { value: day }, , { value: year }] = dateTimeFormat.formatToParts(date);
-                // возвращаем результат
                 return {
                         user: `${user.name} (${user.email})`,
                         message: `${singleFeedback.message}`,
